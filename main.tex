@@ -1,0 +1,254 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{url}
+\usepackage{booktabs}
+
+\title{Generación de Música Simbólica en Notación ABC usando Modelos Transformer}
+
+\author{
+\IEEEauthorblockN{José Andrés Naranjo}
+\IEEEauthorblockA{Universidad San Francisco de Quito\\
+Proyecto de Deep Learning\\
+janaranjos@estud.usfq.edu.ec}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+La generación automática de música es una aplicación relevante de la inteligencia artificial creativa. En este trabajo se explora la generación de música simbólica utilizando un modelo basado en Transformers entrenado sobre secuencias en notación ABC. El modelo aprende patrones estadísticos de la estructura musical y genera nuevas composiciones. Los resultados experimentales muestran una convergencia estable con un Test Loss de 0.2310 y una Perplexity de 1.2599. Además, el uso de técnicas de muestreo como temperature y top-k mejora la diversidad en la generación. Finalmente, la visualización de atención permite interpretar cómo el modelo captura dependencias entre tokens musicales.
+
+\end{abstract}
+
+\section{Introducción}
+
+La generación de música ha sido un campo de interés dentro de la inteligencia artificial durante décadas. Enfoques tradicionales como cadenas de Markov presentan limitaciones para modelar estructuras musicales complejas.
+
+Con el auge del deep learning, modelos secuenciales como RNN y LSTM permitieron capturar dependencias temporales, aunque presentan dificultades para modelar relaciones de largo alcance.
+
+Los Transformers \cite{vaswani2017attention} han revolucionado el modelado de secuencias al utilizar mecanismos de self-attention que permiten capturar dependencias globales de manera eficiente.
+
+La notación ABC representa música como texto, lo que permite abordar este problema como un modelo de lenguaje, donde el objetivo es predecir el siguiente token musical.
+
+La creación musical puede abordarse mediante distintos enfoques, incluyendo la composición manual, métodos algorítmicos y técnicas basadas en inteligencia artificial. En este contexto, la notación ABC constituye una representación simbólica de la música basada en texto, que permite codificar piezas musicales utilizando caracteres ASCII simples.
+
+La notación ABC facilita la transcripción, almacenamiento y conversión de música a distintos formatos, lo que la convierte en una opción adecuada para tareas de modelado de lenguaje aplicadas a música. Al representar la música como secuencias de texto, el problema de generación musical puede abordarse como una tarea de predicción de secuencias, donde el modelo aprende a predecir el siguiente token musical dado un contexto previo.
+
+\section{Trabajo Relacionado}
+
+Tradicionalmente, las redes neuronales recurrentes (RNN) y sus variantes como LSTM han sido ampliamente utilizadas en la generación de música debido a su capacidad para modelar datos secuenciales. Estas arquitecturas permiten capturar dependencias temporales y aprender patrones musicales como progresiones melódicas y estructuras rítmicas, \cite{boulanger2012modeling}, logrando resultados coherentes en secuencias cortas.
+
+Sin embargo, los Transformers permiten modelar dependencias de largo alcance de manera más eficiente. El Music Transformer \cite{huang2018music} demostró mejoras significativas en la generación de estructuras musicales complejas.
+
+En este trabajo, se emplean modelos basados en Transformers, específicamente arquitecturas tipo GPT, que superan estas limitaciones mediante el uso de mecanismos de self-attention. A diferencia de las RNN, los Transformers no procesan las secuencias de forma estrictamente secuencial, sino que permiten que cada token atienda directamente a cualquier otro dentro del contexto.
+
+\section{Dataset}
+
+Se utilizó un dataset de música en notación ABC obtenido de Kaggle, se realizo una limpieza de secuencias musicales y se prepararon para tokenización donde se realizo una conversión de texto musical (ABC Notation) a tokens numéricos.
+
+Los datos fueron procesados a nivel de caracteres y divididos en:
+
+\begin{itemize}
+\item Entrenamiento: 70\%
+\item Validación: 20\%
+\item Test: 10\%
+\end{itemize}
+
+Adicionalmente, se aplicó una técnica simple de \textit{data augmentation} introduciendo ruido aleatorio en los tokens para mejorar la generalización.
+
+\section{Modelo utilizado}
+
+En este trabajo se emplea un modelo basado en la arquitectura Generative Pre-trained Transformer (GPT), diseñado para tareas de modelado de lenguaje autoregresivo. El objetivo del modelo es predecir el siguiente token musical dado un contexto previo, permitiendo la generación secuencial de música en notación ABC.
+
+El modelo implementado corresponde a una versión reducida de GPT, adaptada al tamaño del dataset y a las limitaciones computacionales. A pesar de su tamaño, mantiene los principios fundamentales de la arquitectura Transformer.
+
+Las principales características del modelo son:
+
+\begin{itemize}
+
+\item \textbf{Modelo autoregresivo:} La generación de música se realiza token por token, donde cada predicción depende únicamente de los tokens anteriores. Esto permite modelar la música como una secuencia dependiente del contexto.
+
+\item \textbf{Self-attention enmascarada:} Se utiliza atención causal (masked self-attention), lo que garantiza que el modelo solo tenga acceso a información pasada y no futura durante el entrenamiento, manteniendo la coherencia temporal de la secuencia musical.
+
+\item \textbf{Representación mediante embeddings:} Cada token musical es transformado en un vector denso de dimensión 256, permitiendo capturar relaciones semánticas entre símbolos musicales.
+
+\item \textbf{Codificación posicional:} Se incorpora información sobre el orden de los tokens mediante embeddings posicionales, lo cual es esencial dado que el Transformer no tiene noción inherente de secuencia.
+
+\item \textbf{Múltiples capas de atención:} El modelo utiliza 6 capas Transformer con 8 cabezas de atención, lo que permite capturar distintos patrones musicales como ritmo, repetición y estructura melódica.
+
+\item \textbf{Proyección al vocabulario:} La salida del modelo se proyecta a un espacio del tamaño del vocabulario, generando una distribución de probabilidad sobre el siguiente token posible.
+
+\end{itemize}
+
+Adicionalmente, durante la fase de generación se emplean técnicas de muestreo como \textit{temperature scaling} y \textit{top-k sampling}, las cuales permiten controlar el balance entre coherencia y diversidad en la música generada.
+
+Este enfoque permite tratar la generación musical como un problema de modelado de lenguaje, donde el modelo aprende patrones estadísticos de la estructura musical presentes en la notación ABC.
+
+\section{Metodología}
+
+\subsection{Pipeline}
+
+El flujo del sistema incluye:
+
+\begin{itemize}
+\item Preprocesamiento y tokenización
+\item Creación de secuencias (block size = 128)
+\item Entrenamiento del modelo Transformer
+\item Generación de música con sampling
+\end{itemize}
+
+\subsection{Arquitectura del Modelo}
+
+El modelo sigue la arquitectura tipo GPT, compuesta por:
+
+\begin{itemize}
+\item Embeddings (dim = 256)
+\item 6 capas Transformer
+\item 8 cabezas de atención
+\item Proyección lineal final
+\end{itemize}
+
+La atención se define como:
+
+\begin{equation}
+Attention(Q,K,V) =
+softmax\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+\end{equation}
+
+\subsection{Configuración de Entrenamiento}
+
+\begin{table}[h]
+\centering
+\caption{Hiperparámetros}
+\begin{tabular}{lc}
+\toprule
+Parámetro & Valor \\
+\midrule
+Block Size & 128 \\
+Batch Size & 64 \\
+Learning Rate & $3e^{-4}$ \\
+Epochs & 10 \\
+Embedding Dim & 256 \\
+Layers & 6 \\
+Heads & 8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Generación de Música}
+
+Se utilizó una combinación de:
+
+\begin{itemize}
+\item Temperature sampling
+\item Top-K sampling
+\end{itemize}
+
+Esto permite balancear entre diversidad y coherencia en la generación.
+
+\section{Resultados}
+
+\subsection{Curvas de entrenamiento}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\linewidth]{Train_vs_Validation_loss_per_epoch.png}
+\caption{Loss de entrenamiento vs validación por época.}
+\end{figure}
+
+Se observa una convergencia estable y sin sobreajuste significativo.
+
+\subsection{Evaluación cuantitativa}
+
+\begin{itemize}
+\item Test Loss: 0.2310
+\item Perplexity: 1.2599
+\end{itemize}
+
+Una baja perplexity indica que el modelo tiene baja incertidumbre al predecir el siguiente token.
+
+\subsection{Mapa de atención}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9\linewidth]{Attention_Map.png}
+\caption{Mapa de atención del modelo Transformer.}
+\end{figure}
+
+El patrón diagonal indica que el modelo captura principalmente dependencias locales, aunque también considera relaciones más largas.
+
+\subsection{Música generada}
+
+\begin{verbatim}
+F(D.|G( G{})EF( G)E222222221A|
+:2b(G)d(G)B(G)Bd)d(Gd)B|
+G( F)c d( c( B( c)d(/def)
+\end{verbatim}
+
+\section{Discusión}
+
+Los resultados muestran que el modelo aprende patrones estadísticos de la música.
+
+Sin embargo, se observa que:
+
+\begin{itemize}
+\item La perplexity baja no garantiza calidad musical
+\item El modelo tiende a generar repeticiones
+\item Algunas secuencias rompen la sintaxis ABC
+\end{itemize}
+
+El uso de Top-K sampling mejora significativamente la diversidad de salida, reduciendo patrones repetitivos.
+
+\subsection{Comparación teórica con RNN}
+
+Las RNN procesan secuencias de forma secuencial, lo que limita la captura de dependencias largas.
+
+En contraste, los Transformers permiten relaciones globales mediante atención, lo cual es clave en música donde existen patrones repetitivos a larga distancia.
+
+\section{Limitaciones y Trabajo Futuro}
+
+\begin{itemize}
+\item Tokenización a nivel de carácter limita comprensión musical
+\item Generación puede ser sintácticamente incorrecta
+\item Dataset relativamente pequeño
+\end{itemize}
+
+Futuro trabajo:
+
+\begin{itemize}
+\item Representación basada en eventos musicales
+\item Modelos más grandes
+\item Mejoras en sampling (Top-p)
+\item Evaluación subjetiva musical
+\end{itemize}
+
+\section{Conclusión}
+
+Se demostró que los modelos Transformer pueden generar música simbólica de forma efectiva. Aunque la perplexity obtenida es baja, la calidad musical depende también de técnicas de muestreo. Los resultados confirman el potencial de los Transformers en tareas creativas.
+
+A pesar de que el modelo logra capturar parcialmente la estructura de la notación ABC, los resultados generados muestran inconsistencias sintácticas y semánticas significativas.
+
+Se observan patrones repetitivos, generación de tokens inválidos y pérdida de coherencia a lo largo de la secuencia. Esto sugiere que el modelo ha aprendido representaciones locales de los datos, pero no logra modelar correctamente dependencias de largo alcance.
+
+Estos resultados pueden atribuirse a factores como el tamaño limitado del dataset, el número reducido de épocas de entrenamiento y el uso de técnicas de muestreo con alta aleatoriedad (temperature alta), lo que incrementa la diversidad a costa de la coherencia.
+
+\bibliographystyle{IEEEtran}
+
+\begin{thebibliography}{00}
+
+\bibitem{vaswani2017attention}
+Vaswani et al., Attention Is All You Need, 2017.
+
+\bibitem{boulanger2012modeling}
+Boulanger-Lewandowski et al., 2012.
+
+\bibitem{huang2018music}
+Huang et al., Music Transformer, 2019.
+
+\end{thebibliography}
+
+\end{document}
