@@ -19,3 +19,5 @@ Perplexity metric
 Attention visualization
 Temperature and Top-K sampling
 Loss comparison graphs (Train vs Validation)
+
+<img width="1024" height="1536" alt="Transformer_GPT" src="https://github.com/user-attachments/assets/737d12df-aa60-43b0-82a0-0acafca65664" />
