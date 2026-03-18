@@ -1,7 +1,7 @@
 # Transformer-GPT
 Proyecto Final de Aprendizaje Profundo - Inteligencia Artificial - USFQ
 
-https://drive.google.com/file/d/1uB-SEU89y16LklLLKS-H7JHbycFCiY75/view?usp=sharing
+[https://drive.google.com/file/d/1uB-SEU89y16LklLLKS-H7JHbycFCiY75/view?usp=sharing](https://colab.research.google.com/drive/1uB-SEU89y16LklLLKS-H7JHbycFCiY75)
 
 Music Generation with Transformer (GPT) using ABC Notation
 Deep Learning Project
